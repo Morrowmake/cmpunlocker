@@ -40,6 +40,8 @@ Usage: sudo ./install.sh [--profile=8gb|10gb] [--no-iommu] [--no-gen2-service]
                   mailbox setup needs. Verify data with a content check before
                   relying on it
 
+An existing --p2p setting is retained when reinstalling without the flag.
+
 By default the installer appends intel_iommu=on / amd_iommu=on plus iommu=pt to
 the kernel command line so the IOMMU runs in passthrough mode. This takes effect
 on the next reboot.
@@ -230,6 +232,11 @@ done
 depmod -a "$(uname -r)"
 ok "DKMS conflicting modules resolution complete"
 
+info "Configuring PCIe Gen2"
+source "${SCRIPT_DIR}/common/pcie-config.sh"
+write_pcie_config /etc/modprobe.d/cmp-pcie-gen2.conf "${CONFIGURE_P2P}"
+ok "Wrote /etc/modprobe.d/cmp-pcie-gen2.conf"
+
 step "Building and installing patched modules"
 chmod +x "${SCRIPT_DIR}/driver/build.sh"
 CMPUNLOCKER_DRIVER_VERSION="${detected}" \
@@ -251,16 +258,6 @@ if (( CONFIGURE_PASSTHROUGH == 1 )); then
 else
     warn "--no-passthrough given; cards are not prepared for VM passthrough"
 fi
-
-info "Configuring PCIe Gen2"
-# One RegistryDwords string only: a second file setting it would replace these keys.
-REGISTRY_DWORDS="RmForceEnableGen2=1;RMPcieLinkSpeed=0x1"
-if (( CONFIGURE_P2P == 1 )); then
-    REGISTRY_DWORDS="${REGISTRY_DWORDS};ForceP2P=0x11"
-fi
-printf 'options nvidia NVreg_RegistryDwords="%s"\n' "${REGISTRY_DWORDS}" \
-    > /etc/modprobe.d/cmp-pcie-gen2.conf
-ok "Wrote /etc/modprobe.d/cmp-pcie-gen2.conf"
 
 for legacy_unit in cmpretrain.service cmp-gen2-retrain.service; do
     systemctl disable --now "${legacy_unit}" 2>/dev/null || true
