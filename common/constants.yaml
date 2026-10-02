@@ -52,6 +52,7 @@ unlocks:
       feat:           { addr: "0x00823804", value: "0xffffffff" }
       feat2:          { addr: "0x00823b00", value: "0xffffffff" }
       fbpa_plm:       { addr: "0x009a0148", value: "0xffffffff" }
+      trap31_plm:     { addr: "0x0012277c", value: "0xffffffff" }
 
   compute_throughput:
     patch: sec2-postbl-plm-ss-cfg.patch
@@ -124,3 +125,14 @@ unlocks:
   cmp-sku-mask:
     patch: cmp-sku-mask.patch
     registers: {}
+
+  p2p:
+    patch: p2p-unlock.patch
+    registers:
+      trap31_match:  { addr: "0x0012247c", value: "0x00139000" }
+      trap31_mask:   { addr: "0x001224fc", value: "0xfc000fff" }
+      trap31_data1:  { addr: "0x0012257c", value: "0xc0000000" }
+      trap31_data2:  { addr: "0x001225fc" }
+      trap31_action: { addr: "0x0012267c", value: "0x00100000" }
+      trap31_cfg:    { addr: "0x001226fc", value: "0x0001c010" }
+      trap31_plm:    { addr: "0x0012277c", value: "0xffffffff" }

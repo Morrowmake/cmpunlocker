@@ -66,7 +66,7 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
  
      {
          // If the new FB layout requires a scrubber ucode to scrub additional space, prepare it now
-@@ -4821,6 +4857,143 @@
+@@ -4821,6 +4857,158 @@
      // Setup arguments for bootstrapping GSP
      NV_CHECK_OK_OR_RETURN(LEVEL_ERROR, kgspPrepareForBootstrap_HAL(pGpu, pKernelGsp, KGSP_BOOT_MODE_NORMAL));
  
@@ -75,12 +75,14 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
 +        NvU32 devId = pGpu->idInfo.PCIDeviceID >> 16;
 +        NvU32 plmIdx, attempt;
 +        NV_STATUS plmStatus;
++        NvU32 forceP2P = 0;
 +
 +        static const struct { NvU32 addr; NvU32 value; const char *name; } plmTable[] = {
 +            { 0x001fa7ccU, 0xfffff0ffU, "WPR_CFG" },
 +            { 0x009a0148U, 0xffffffffU, "FBPA" },
 +            { 0x001fa7c4U, 0xffffffffU, "WPR" },
 +            { 0x00823804U, 0xffffffffU, "FEAT" },
++            { 0x0012277cU, 0xffffffffU, "TRAP31_PLM" },
 +            { 0x00088ff4U, 0xffffffffU, "XVE" },
 +            { 0x00088ab4U, 0xffffffffU, "XVE_B" },
 +            { 0x00088ff8U, 0xffffffffU, "XVE_C" },
@@ -97,9 +99,22 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
 +                  "SEC2_DEBUG: saved WPR2 lo=0x%08x hi=0x%08x\n",
 +                  wpr2Lo, wpr2Hi);
 +
-+        for (plmIdx = 0; plmIdx < 12; plmIdx++)
++        //
++        // TRAP31_PLM lets the P2P mailbox setup arm PRI decode trap 31
++        // (p2p-unlock.patch). It is opened only when P2P is forced on with
++        // the ForceP2P regkey, so a default install keeps it closed.
++        //
++        if (osReadRegistryDword(pGpu, NV_REG_STR_CL_FORCE_P2P, &forceP2P) != NV_OK)
++            forceP2P = 0;
++
++        for (plmIdx = 0; plmIdx < NV_ARRAY_ELEMENTS(plmTable); plmIdx++)
 +        {
 +            NvBool opened = NV_FALSE;
++
++            if ((plmTable[plmIdx].addr == 0x0012277cU) &&
++                !FLD_TEST_DRF(_REG_STR, _CL_FORCE_P2P, _READ, _ENABLE, forceP2P) &&
++                !FLD_TEST_DRF(_REG_STR, _CL_FORCE_P2P, _WRITE, _ENABLE, forceP2P))
++                continue;
 +            for (attempt = 0; attempt < 2 && !opened; attempt++)
 +            {
 +                GPU_REG_WR32(pGpu, 0x001fa824U, wpr2Lo);
@@ -210,7 +225,7 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
      // Release the API lock if relaxed locking for parallel init is enabled
      NvBool bRelaxedLocking = _kgspShouldRelaxGspInitLocking(pGpu);
      if (bRelaxedLocking)
-@@ -5662,6 +5816,84 @@
+@@ -5662,6 +5831,84 @@
      pKernelGsp->gspRmBootUcodeSize   = 0;
  }
  
@@ -295,7 +310,7 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
  static NV_STATUS
  _kgspCreateSignatureMemdesc
  (
-@@ -5672,6 +5904,9 @@
+@@ -5672,6 +5919,9 @@
  {
      NV_STATUS status = NV_OK;
      NvU8 *pSignatureVa = NULL;
@@ -305,7 +320,7 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
      NvU64 flags = MEMDESC_FLAGS_NONE;
  
      if (confComputeForceUnprotAlloc(pGpu))
-@@ -5682,7 +5917,7 @@
+@@ -5682,7 +5932,7 @@
      // NOTE: align to 256 because that's the alignment needed for Booter DMA
      NV_CHECK_OK_OR_RETURN(LEVEL_ERROR,
          memdescCreate(&pKernelGsp->pSignatureMemdesc, pGpu,
@@ -314,7 +329,7 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
              NV_TRUE, ADDR_SYSMEM, NV_MEMORY_CACHED, flags));
  
      memdescTagAlloc(status,
-@@ -5694,8 +5929,48 @@
+@@ -5694,8 +5944,48 @@
          (pSignatureVa != NULL) ? NV_OK : NV_ERR_INSUFFICIENT_RESOURCES,
          fail_alloc);
  
@@ -365,7 +380,7 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
  
      memdescUnmapInternal(pGpu, pKernelGsp->pSignatureMemdesc, 0);
      pSignatureVa = NULL;
-@@ -5709,6 +5984,69 @@
+@@ -5709,6 +5999,69 @@
      memdescDestroy(pKernelGsp->pSignatureMemdesc);
      pKernelGsp->pSignatureMemdesc = NULL;
  
@@ -435,7 +450,7 @@ diff -Naur a/src/nvidia/src/kernel/gpu/gsp/kernel_gsp.c b/src/nvidia/src/kernel/
      return status;
  }
  
-@@ -6612,6 +6950,51 @@
+@@ -6612,6 +6965,51 @@
  {
      GspStaticConfigInfo *pGSCI = GPU_GET_GSP_STATIC_INFO(pGpu);
  
