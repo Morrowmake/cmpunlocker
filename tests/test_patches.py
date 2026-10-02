@@ -40,6 +40,13 @@ def test_patches_apply(version):
         src = pathlib.Path(tmp, "open-gpu-kernel-modules-" + version)
         assert src.is_dir(), os.listdir(tmp)
         for name in ORDER:
-            r = subprocess.run(["patch", "-p1", "-i", str(PATCHES / name)], cwd=src,
+            flags = ["-F0"] if name == "p2p-unlock.patch" else []
+            r = subprocess.run(["patch", *flags, "-p1", "-i", str(PATCHES / name)], cwd=src,
                                stdin=subprocess.DEVNULL, capture_output=True, text=True)
             assert r.returncode == 0, "%s on %s:\n%s%s" % (name, version, r.stdout, r.stderr)
+
+        gpu = (src / "src/nvidia/src/kernel/gpu/gpu.c").read_text()
+        assert 'NvU32 trapPlm = GPU_REG_RD32(pGpu, 0x0012277cU);' in gpu
+        assert 'if (trapPlm == 0xFFFFFFFFU)' in gpu
+        if version.startswith("615."):
+            assert 'pGpu->bPcieP2PSkipChipsetCheck = p2pCapsParams.bSkipChipsetCheck;' in gpu

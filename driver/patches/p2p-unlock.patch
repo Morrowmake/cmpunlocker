@@ -1,9 +1,10 @@
 --- a/src/nvidia/src/kernel/gpu/gpu.c
 +++ b/src/nvidia/src/kernel/gpu/gpu.c
-@@ -2517,6 +2517,52 @@
- 
-     pGpu->pcieP2PReadCaps = p2pCapsParams.p2pReadCapsStatus;
-     pGpu->pcieP2PWriteCaps = p2pCapsParams.p2pWriteCapsStatus;
+@@ -2518,2 +2518,48 @@
+-    pGpu->pcieP2PReadCaps = p2pCapsParams.p2pReadCapsStatus;
+-    pGpu->pcieP2PWriteCaps = p2pCapsParams.p2pWriteCapsStatus;
++    pGpu->pcieP2PReadCaps = p2pCapsParams.p2pReadCapsStatus;
++    pGpu->pcieP2PWriteCaps = p2pCapsParams.p2pWriteCapsStatus;
 +
 +    //
 +    // CMPUNLOCK: GSP reports PCIe P2P as unsupported on a CMP 170HX, but the
@@ -50,9 +51,6 @@
 +            }
 +        }
 +    }
- }
- 
- static void
 --- a/src/nvidia/src/kernel/gpu/bus/arch/maxwell/kern_bus_gm200.c
 +++ b/src/nvidia/src/kernel/gpu/bus/arch/maxwell/kern_bus_gm200.c
 @@ -49,6 +49,117 @@
