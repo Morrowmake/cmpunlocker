@@ -1,3 +1,53 @@
+## Morrowmake PCIe P2P fork
+
+This fork tracks [upstream master](https://github.com/amoghmunikote/cmpunlocker)
+(base `6c442ee`). It adds working PCIe peer-to-peer copies on CMP 170HX using
+the maintainer's `P2P` branch and opens `TRAP31_PLM` through the Booter when
+`ForceP2P` enables peer reads or writes, allowing the mailbox trap to arm.
+
+The patch set applies to 610.43.02, 610.43.03, 610.57.04 and 615.71.09;
+the four-card hardware result below was measured with 610.57.04.
+
+With the requirements below installed, run:
+
+```bash
+sudo ./install.sh --p2p --profile=8gb --no-iommu --no-passthrough
+```
+
+Use `--profile=10gb` for 10GB cards; omit `--no-iommu` or `--no-passthrough`
+if you want the corresponding setup. The installer writes this combined line
+and retains P2P on subsequent installs:
+
+```text
+options nvidia NVreg_RegistryDwords="RmForceEnableGen2=1;RMPcieLinkSpeed=0x1;ForceP2P=0x11"
+```
+
+Stop GPU workloads before a module reload. The installer attempts a live reload;
+if the modules remain busy, stop their users and reload the NVIDIA modules, or
+cold boot. If memory stays at its stock size, power off completely before booting.
+
+Verify actual data movement after loading the patched modules:
+
+```bash
+python3 tools/p2p-content-check.py
+```
+
+The standalone checker needs Python 3 and the NVIDIA CUDA driver, without PyTorch
+or a CUDA toolkit. It enables peer access on every ordered pair, copies fresh
+random bytes at 128 KiB−1/128 KiB/128 KiB+1, 512 KiB−1/512 KiB/512 KiB+1,
+and 1, 8, 32 MiB, then reads the destination in its owning context and compares
+every byte. Any unsupported pair, CUDA error, or mismatch exits nonzero.
+`nvidia-smi topo` and reported peer support alone do not verify contents.
+The check covers peer copies; applications using IPC or collectives should also
+validate their own transfers.
+
+On a four-card CMP 170HX system, the full peer-content checks passed on all 12
+ordered pairs. Measured 16 MiB copies on pairs 0↔1 and 0↔2 reached approximately
+**6.65 GB/s each way**, with contents verified (610.57.04, PCIe Gen2 x16).
+See [credits](CREDITS.md) for the P2P code and original trap approach.
+
+---
+
 <div align="center" style="text-align: center;">
   <img width="1280" height="300" alt="cmpunlocker banner" src="https://github.com/user-attachments/assets/6edceb8e-afcb-43a4-b5b2-4321d81284d1" />
 </div>
