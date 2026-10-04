@@ -1,3 +1,7 @@
+# GPL modification notice: modified in the Morrowmake fork on 2026-10-02.
+# Changes: P2P patch application and driver compatibility checks.
+# Upstream/maintainer credits and original copyright/licence notices remain.
+# See root LICENSE for this project's GPL-2.0-only terms.
 import os
 import pathlib
 import shutil

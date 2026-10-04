@@ -1,4 +1,8 @@
 #!/bin/bash
+# GPL modification notice: modified in the Morrowmake fork on 2026-10-02.
+# Changes: --p2p installation option and retention of existing P2P settings.
+# Upstream/maintainer credits and original copyright/licence notices remain.
+# See root LICENSE for this project's GPL-2.0-only terms.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

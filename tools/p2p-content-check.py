@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-only
+# Copyright (C) 2026 Morrowmake
+# GPL source notice: independent checker added by Morrowmake on 2026-10-02.
+# Morrowmake fork addition: bytewise CUDA peer-copy content verification.
+# Licensed under GPL-2.0-only, matching the root LICENSE.
+# Upstream/maintainer credits and original copyright/licence notices remain.
 """Compare every destination byte after CUDA peer copies on all ordered pairs."""
 import ctypes as ct
 import os

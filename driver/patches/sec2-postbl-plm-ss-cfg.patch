@@ -1,3 +1,8 @@
+# GPL modification notice: modified in the Morrowmake fork on 2026-10-02.
+# Changes: ForceP2P-controlled trap-31 privilege-mask configuration.
+# Upstream/maintainer credits and original copyright/licence notices remain.
+# NVIDIA original files retain their original MIT/dual licence notices.
+# See root LICENSE for the fork's GPL-2.0-only terms.
 diff -Naur a/src/nvidia/generated/g_kernel_gsp_nvoc.h b/src/nvidia/generated/g_kernel_gsp_nvoc.h
 --- a/src/nvidia/generated/g_kernel_gsp_nvoc.h
 +++ b/src/nvidia/generated/g_kernel_gsp_nvoc.h

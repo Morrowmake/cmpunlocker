@@ -1,3 +1,5 @@
+<!-- Modified by Morrowmake on 2026-10-04: source provenance and licence clarification. -->
+
 ## Morrowmake PCIe P2P fork
 
 This fork tracks [upstream master](https://github.com/amoghmunikote/cmpunlocker)
@@ -45,6 +47,20 @@ On a four-card CMP 170HX system, the full peer-content checks passed on all 12
 ordered pairs. Measured 16 MiB copies on pairs 0↔1 and 0↔2 reached approximately
 **6.65 GB/s each way**, with contents verified (610.57.04, PCIe Gen2 x16).
 See [credits](CREDITS.md) for the P2P code and original trap approach.
+
+### Licences and source
+
+This fork retains upstream's [GPL version 2 licence](LICENSE).
+The installer downloads NVIDIA's open kernel-module source, applies the
+published patches and builds the modules locally. Original NVIDIA copyright,
+MIT and dual MIT/GPL notices remain in their respective source files.
+
+If you redistribute built modules, provide the complete corresponding source
+for that exact build, including the applied patches, profile/build inputs and
+installation scripts, and retain the applicable licence notices. An unmodified
+upstream link alone does not describe the modified binary. See
+[GPLv2 section 3](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html#section3).
+
 
 ---
 

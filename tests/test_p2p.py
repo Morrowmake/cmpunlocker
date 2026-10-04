@@ -1,3 +1,7 @@
+# GPL modification notice: Morrowmake fork changes dated 2026-10-02.
+# Changes: CPU tests for P2P configuration retention and bytewise peer checking.
+# Upstream/maintainer credits and original copyright/licence notices remain.
+# See root LICENSE for this project's GPL-2.0-only terms.
 import importlib.util
 import subprocess
 

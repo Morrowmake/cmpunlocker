@@ -1,3 +1,10 @@
+# GPL modification notice: Morrowmake fork changes dated 2026-10-02.
+# Inherited P2P source: amoghmunikote, commit
+# 14b38f72dbe0ee03dfd9377880a0c83302f703d3.
+# Morrowmake changes: compatibility adjustments for supported driver versions.
+# Upstream/maintainer credits and original copyright/licence notices remain.
+# NVIDIA original files retain their original MIT/dual licence notices.
+# See root LICENSE for the fork's GPL-2.0-only terms.
 --- a/src/nvidia/src/kernel/gpu/gpu.c
 +++ b/src/nvidia/src/kernel/gpu/gpu.c
 @@ -2518,2 +2518,48 @@
